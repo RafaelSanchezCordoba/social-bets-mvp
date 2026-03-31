@@ -1,3 +1,5 @@
+"use client";
+
 import { cancelBetAction, closeBetAction, resolveBetAction } from "@/app/groups/actions";
 import { PlaceWagerForm } from "@/components/bets/place-wager-form";
 import type { BetSummary } from "@/lib/bets/queries";
@@ -26,16 +28,17 @@ export function BetCard({ groupId, bet, currentUserId }: BetCardProps) {
     isCreator &&
     !["resolved", "cancelled"].includes(bet.status) &&
     (bet.status === "closed" || deadlinePassed);
+  const compactStatus = getStatusLabel(bet.status, bet.isExpired);
 
   return (
-    <article className="border-line rounded-[1.75rem] border bg-[rgba(255,255,255,0.78)] p-4 shadow-sm backdrop-blur sm:p-5">
-      <div className="space-y-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <details className="border-line rounded-[1.75rem] border bg-[rgba(255,255,255,0.78)] p-4 shadow-sm backdrop-blur sm:p-5">
+      <summary className="list-none cursor-pointer">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-ink text-2xl font-semibold tracking-[-0.04em]">{bet.title}</h3>
+              <h3 className="text-ink text-xl font-semibold tracking-[-0.04em] sm:text-2xl">{bet.title}</h3>
               <span className="bg-accent-soft text-accent-strong rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em]">
-                {getStatusLabel(bet.status, bet.isExpired)}
+                {compactStatus}
               </span>
             </div>
             <p className="text-ink-soft text-sm leading-6">
@@ -48,14 +51,24 @@ export function BetCard({ groupId, bet, currentUserId }: BetCardProps) {
                   })}`
                 : "Manual close by the bet creator"}
             </p>
+            {bet.myWager ? (
+              <p className="text-ink-muted text-sm leading-6">Your wager: {bet.myWager.points} pts</p>
+            ) : null}
           </div>
 
-          <div className="border-line rounded-2xl border bg-white px-4 py-3 text-right">
-            <p className="text-ink-muted font-mono text-[11px] uppercase tracking-[0.2em]">Total pool</p>
-            <p className="text-ink mt-2 text-lg font-semibold">{bet.totalPool} pts</p>
+          <div className="flex items-center gap-3 self-start sm:self-center">
+            <div className="border-line rounded-2xl border bg-white px-4 py-3 text-right">
+              <p className="text-ink-muted font-mono text-[11px] uppercase tracking-[0.2em]">Total pool</p>
+              <p className="text-ink mt-2 text-lg font-semibold">{bet.totalPool} pts</p>
+            </div>
+            <div className="text-ink-muted font-mono text-xs uppercase tracking-[0.2em]">
+              Expand
+            </div>
           </div>
         </div>
+      </summary>
 
+      <div className="mt-5 space-y-5 border-t border-[rgba(92,73,48,0.12)] pt-5">
         <div className="grid gap-3">
           {bet.options.map((option) => {
             const impliedMultiplier = option.totalPoints > 0 ? (bet.totalPool / option.totalPoints).toFixed(2) : null;
@@ -153,6 +166,6 @@ export function BetCard({ groupId, bet, currentUserId }: BetCardProps) {
           </div>
         ) : null}
       </div>
-    </article>
+    </details>
   );
 }

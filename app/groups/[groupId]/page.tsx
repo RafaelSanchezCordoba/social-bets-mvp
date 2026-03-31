@@ -7,8 +7,8 @@ import {
   leaveGroupAction,
   removeMemberAction,
 } from "@/app/dashboard/actions";
-import { BetCard } from "@/components/bets/bet-card";
 import { CreateBetForm } from "@/components/bets/create-bet-form";
+import { GroupBetsPanel } from "@/components/bets/group-bets-panel";
 import { GroupsRealtimeListener } from "@/components/realtime/groups-realtime-listener";
 import { getGroupBets } from "@/lib/bets/queries";
 import { getGroupForUser } from "@/lib/groups/queries";
@@ -40,7 +40,8 @@ export default async function GroupPage({ params }: GroupPageProps) {
   const bets = await getGroupBets(group.id, user.id);
   const currentUserMember = group.members.find((member) => member.user_id === user.id) ?? null;
   const openBets = bets.filter((bet) => bet.status === "open");
-  const finishedBets = bets.filter((bet) => bet.status !== "open");
+  const closedBets = bets.filter((bet) => bet.status === "closed");
+  const historyBets = bets.filter((bet) => ["resolved", "cancelled"].includes(bet.status));
 
   const isOwner = group.currentUserRole === "owner";
 
@@ -210,51 +211,13 @@ export default async function GroupPage({ params }: GroupPageProps) {
             </div>
           </section>
 
-          <section className="space-y-4">
-            <div className="space-y-2">
-              <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
-                Open bets
-              </p>
-              <h2 className="text-ink text-2xl font-semibold tracking-[-0.03em]">
-                Live pools and open wagers
-              </h2>
-            </div>
-
-            {openBets.length > 0 ? (
-              <div className="grid gap-4">
-                {openBets.map((bet) => (
-                  <BetCard key={bet.id} groupId={group.id} bet={bet} currentUserId={user.id} />
-                ))}
-              </div>
-            ) : (
-              <div className="border-line rounded-[1.75rem] border bg-white/70 p-5 text-sm leading-7 text-ink-soft">
-                There are no open bets in this group yet.
-              </div>
-            )}
-          </section>
-
-          <section className="space-y-4">
-            <div className="space-y-2">
-              <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
-                Finished bets
-              </p>
-              <h2 className="text-ink text-2xl font-semibold tracking-[-0.03em]">
-                Closed, resolved, and cancelled
-              </h2>
-            </div>
-
-            {finishedBets.length > 0 ? (
-              <div className="grid gap-4">
-                {finishedBets.map((bet) => (
-                  <BetCard key={bet.id} groupId={group.id} bet={bet} currentUserId={user.id} />
-                ))}
-              </div>
-            ) : (
-              <div className="border-line rounded-[1.75rem] border bg-white/70 p-5 text-sm leading-7 text-ink-soft">
-                Resolved and cancelled bets will show up here.
-              </div>
-            )}
-          </section>
+          <GroupBetsPanel
+            groupId={group.id}
+            currentUserId={user.id}
+            openBets={openBets}
+            closedBets={closedBets}
+            historyBets={historyBets}
+          />
 
           <div className="border-line rounded-2xl border bg-white/80 p-4 text-sm leading-7 text-ink-soft">
             Apply `supabase/migrations/20260331170000_create_bets_and_wagers.sql` in Supabase before testing the betting flow in this group.
