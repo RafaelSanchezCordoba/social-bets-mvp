@@ -7,7 +7,7 @@ export default function Home() {
         <div className="space-y-8">
           <div className="inline-flex items-center gap-3 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-medium uppercase tracking-[0.24em] text-ink-muted shadow-sm backdrop-blur">
             <span className="bg-accent h-2 w-2 rounded-full" />
-            MVP baseline
+            Welcome to Social Bets
           </div>
 
           <div className="space-y-5">
@@ -15,10 +15,10 @@ export default function Home() {
               Social Bets
             </p>
             <h1 className="text-ink max-w-3xl text-5xl font-semibold tracking-[-0.05em] sm:text-6xl">
-              Private friend betting with points, groups, and live updates.
+              Build private prediction circles with friends and keep every point moving live.
             </h1>
             <p className="text-ink-soft max-w-2xl text-lg leading-8 sm:text-xl">
-              The foundation is ready for an MVP built on Next.js and Supabase without carrying the default starter baggage.
+              Create invite-only groups, open quick bets, wager virtual points, and follow the pool in real time from a mobile-first app shell.
             </p>
           </div>
 
@@ -37,21 +37,29 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div className="border-line rounded-2xl border bg-white/80 px-5 py-4 shadow-sm backdrop-blur">
               <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
-                Engine
+                Private groups
               </p>
               <p className="text-ink mt-2 text-base font-medium">
-                Parimutuel system, no real money
+                Invite-only circles for your own people
               </p>
             </div>
             <div className="border-line rounded-2xl border bg-white/80 px-5 py-4 shadow-sm backdrop-blur">
               <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
-                Stack
+                Point-based
               </p>
               <p className="text-ink mt-2 text-base font-medium">
-                Next.js, Supabase, Tailwind CSS
+                No real money, only virtual balances
+              </p>
+            </div>
+            <div className="border-line rounded-2xl border bg-white/80 px-5 py-4 shadow-sm backdrop-blur">
+              <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
+                Live sync
+              </p>
+              <p className="text-ink mt-2 text-base font-medium">
+                Pools, members, and outcomes update fast
               </p>
             </div>
           </div>
@@ -74,7 +82,7 @@ export default function Home() {
             </div>
 
             <div className="border-line rounded-2xl border bg-white px-4 py-4">
-              <p className="text-ink-soft text-sm">Live bet</p>
+              <p className="text-ink-soft text-sm">What it feels like inside</p>
               <p className="text-ink mt-1 text-xl font-medium">
                 Who wins Saturday&apos;s derby?
               </p>
@@ -131,26 +139,26 @@ export default function Home() {
       <section className="border-line text-ink-soft grid gap-4 border-t pt-8 text-sm md:grid-cols-3">
         <article className="border-line rounded-2xl border bg-white/70 p-5 backdrop-blur">
           <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
-            Scope MVP
+            1. Create or join
           </p>
           <p className="mt-3 leading-7">
-            Auth, private groups, bet creation, atomic wagers, and payout resolution.
+            Start a new group or enter with a friend&apos;s invite code.
           </p>
         </article>
         <article className="border-line rounded-2xl border bg-white/70 p-5 backdrop-blur">
           <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
-            Backend
+            2. Bet with points
           </p>
           <p className="mt-3 leading-7">
-            Supabase handles auth, Postgres, realtime, and RPC for place wager and resolve bet.
+            Pick one outcome, lock your wager, and watch the pool shift live.
           </p>
         </article>
         <article className="border-line rounded-2xl border bg-white/70 p-5 backdrop-blur">
           <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
-            Workflow
+            3. Resolve together
           </p>
           <p className="mt-3 leading-7">
-            `main` stays stable; product work continues through `dev` and focused `feature/*` branches.
+            Close, resolve, or cancel bets and keep the group synced in real time.
           </p>
         </article>
       </section>

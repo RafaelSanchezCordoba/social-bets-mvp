@@ -33,7 +33,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
   const group = await getGroupForUser(groupId, user.id);
 
   if (!group) {
-    redirect("/dashboard");
+    redirect("/groups");
   }
 
   const bets = await getGroupBets(group.id, user.id);
@@ -51,7 +51,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
         <div className="bg-panel space-y-5 rounded-[1.5rem] p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-3">
-              <Link href="/dashboard" className="text-ink-muted font-mono text-xs uppercase tracking-[0.24em]">
+              <Link href="/groups" className="text-ink-muted font-mono text-xs uppercase tracking-[0.24em]">
                 Back to groups
               </Link>
               <div className="flex flex-wrap items-center gap-2">
