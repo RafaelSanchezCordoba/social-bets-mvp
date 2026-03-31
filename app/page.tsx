@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-10 sm:px-10 lg:px-12">
@@ -5,7 +7,7 @@ export default function Home() {
         <div className="space-y-8">
           <div className="inline-flex items-center gap-3 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-medium uppercase tracking-[0.24em] text-ink-muted shadow-sm backdrop-blur">
             <span className="bg-accent h-2 w-2 rounded-full" />
-            Baseline del MVP
+            MVP baseline
           </div>
 
           <div className="space-y-5">
@@ -13,20 +15,35 @@ export default function Home() {
               Social Bets
             </p>
             <h1 className="text-ink max-w-3xl text-5xl font-semibold tracking-[-0.05em] sm:text-6xl">
-              Apuestas privadas entre amigos con puntos, grupos y resultados en tiempo real.
+              Private friend betting with points, groups, and live updates.
             </h1>
             <p className="text-ink-soft max-w-2xl text-lg leading-8 sm:text-xl">
-              Esta base deja el proyecto listo para construir el flujo MVP sobre Next.js y Supabase sin arrastrar el template inicial.
+              The foundation is ready for an MVP built on Next.js and Supabase without carrying the default starter baggage.
             </p>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/signup"
+              className="bg-accent text-background flex h-13 items-center justify-center rounded-2xl px-5 text-base font-semibold shadow-[0_14px_30px_rgba(141,69,23,0.2)] transition hover:translate-y-[-1px]"
+            >
+              Create account
+            </Link>
+            <Link
+              href="/login"
+              className="border-line text-ink flex h-13 items-center justify-center rounded-2xl border bg-white/85 px-5 text-base font-medium shadow-sm backdrop-blur"
+            >
+              Sign in
+            </Link>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="border-line rounded-2xl border bg-white/80 px-5 py-4 shadow-sm backdrop-blur">
               <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
-                Motor
+                Engine
               </p>
               <p className="text-ink mt-2 text-base font-medium">
-                Sistema parimutuel, sin dinero real
+                Parimutuel system, no real money
               </p>
             </div>
             <div className="border-line rounded-2xl border bg-white/80 px-5 py-4 shadow-sm backdrop-blur">
@@ -45,10 +62,10 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.24em]">
-                  Grupo demo
+                  Demo group
                 </p>
                 <h2 className="text-ink mt-2 text-2xl font-semibold">
-                  La Liga del Domingo
+                  Sunday League Crew
                 </h2>
               </div>
               <div className="bg-accent-soft text-accent-strong rounded-full px-3 py-1 font-mono text-xs uppercase tracking-[0.2em]">
@@ -57,16 +74,16 @@ export default function Home() {
             </div>
 
             <div className="border-line rounded-2xl border bg-white px-4 py-4">
-              <p className="text-ink-soft text-sm">Apuesta activa</p>
+              <p className="text-ink-soft text-sm">Live bet</p>
               <p className="text-ink mt-1 text-xl font-medium">
-                Quien gana el clasico del sabado?
+                Who wins Saturday&apos;s derby?
               </p>
 
               <div className="mt-5 space-y-3">
                 {[
-                  { label: "Equipo A", points: 420, share: "42%", odds: "2.38x" },
-                  { label: "Empate", points: 180, share: "18%", odds: "5.56x" },
-                  { label: "Equipo B", points: 400, share: "40%", odds: "2.50x" },
+                  { label: "Team A", points: 420, share: "42%", odds: "2.38x" },
+                  { label: "Draw", points: 180, share: "18%", odds: "5.56x" },
+                  { label: "Team B", points: 400, share: "40%", odds: "2.50x" },
                 ].map((option) => (
                   <div
                     key={option.label}
@@ -78,7 +95,7 @@ export default function Home() {
                           {option.label}
                         </p>
                         <p className="text-ink-muted mt-1 font-mono text-xs uppercase tracking-[0.18em]">
-                          {option.points} pts · {option.share} del pool
+                          {option.points} pts · {option.share} of the pool
                         </p>
                       </div>
                       <p className="text-accent-strong text-lg font-semibold">
@@ -92,9 +109,9 @@ export default function Home() {
 
             <div className="grid gap-3 sm:grid-cols-3">
               {[
-                ["Pool total", "1000 pts"],
-                ["Mi saldo", "860 pts"],
-                ["Realtime", "Activo"],
+                ["Total pool", "1000 pts"],
+                ["My balance", "860 pts"],
+                ["Realtime", "Active"],
               ].map(([label, value]) => (
                 <div
                   key={label}
@@ -117,7 +134,7 @@ export default function Home() {
             Scope MVP
           </p>
           <p className="mt-3 leading-7">
-            Auth, grupos privados, creacion de apuestas, wagers atomicos y resolucion con payouts.
+            Auth, private groups, bet creation, atomic wagers, and payout resolution.
           </p>
         </article>
         <article className="border-line rounded-2xl border bg-white/70 p-5 backdrop-blur">
@@ -125,7 +142,7 @@ export default function Home() {
             Backend
           </p>
           <p className="mt-3 leading-7">
-            Supabase manejara auth, Postgres, realtime y RPC para place wager y resolve bet.
+            Supabase handles auth, Postgres, realtime, and RPC for place wager and resolve bet.
           </p>
         </article>
         <article className="border-line rounded-2xl border bg-white/70 p-5 backdrop-blur">
@@ -133,7 +150,7 @@ export default function Home() {
             Workflow
           </p>
           <p className="mt-3 leading-7">
-            `main` queda como baseline estable; el desarrollo del producto continuara desde `dev` y ramas `feature/*`.
+            `main` stays stable; product work continues through `dev` and focused `feature/*` branches.
           </p>
         </article>
       </section>
