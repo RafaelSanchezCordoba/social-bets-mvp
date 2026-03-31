@@ -74,8 +74,21 @@ npm run lint
 3. Use `lib/supabase/client.ts` in client components
 4. Use `lib/supabase/server.ts` in server components, server actions or route handlers
 5. Run `npm run supabase:check` to verify the connection
+6. Add `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` if you want login by username on the server
 
 This setup only wires the project to Supabase. Database schema, auth screens, middleware and RPC functions come next.
+
+## Auth Setup
+
+The auth flow expects the SQL migration in `supabase/migrations/20260331120000_create_profiles.sql` to be applied in Supabase.
+
+That migration creates:
+
+- `public.profiles`
+- the trigger that copies new `auth.users` into `public.profiles`
+- the RLS policies for each user profile
+
+The login screen supports email or username. Username login is resolved on the server and needs `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`.
 
 ## Git Workflow
 
