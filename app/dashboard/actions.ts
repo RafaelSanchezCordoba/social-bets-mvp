@@ -252,3 +252,46 @@ export async function deleteGroupAction(formData: FormData) {
   revalidatePath("/dashboard");
   redirect("/dashboard");
 }
+
+export async function leaveGroupAction(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return;
+  }
+
+  if (!hasServiceRoleKey()) {
+    return;
+  }
+
+  const admin = createAdminClient();
+  const groupId = getString(formData, "groupId");
+
+  if (!groupId) {
+    return;
+  }
+
+  const { data: membership } = await supabase
+    .from("group_members")
+    .select("role")
+    .eq("group_id", groupId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!membership || membership.role === "owner") {
+    return;
+  }
+
+  await admin
+    .from("group_members")
+    .delete()
+    .eq("group_id", groupId)
+    .eq("user_id", user.id);
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/groups/${groupId}`);
+  redirect("/dashboard");
+}

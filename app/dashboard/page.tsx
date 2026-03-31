@@ -4,6 +4,7 @@ import { signOutAction } from "@/app/(auth)/actions";
 import { CreateGroupForm } from "@/components/groups/create-group-form";
 import { GroupCard } from "@/components/groups/group-card";
 import { JoinGroupForm } from "@/components/groups/join-group-form";
+import { GroupsRealtimeListener } from "@/components/realtime/groups-realtime-listener";
 import { getUserGroups } from "@/lib/groups/queries";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,6 +28,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
+      <GroupsRealtimeListener currentUserId={user.id} />
       <section className="border-line-strong rounded-[2rem] border bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(244,239,231,0.94))] p-4 shadow-[0_24px_80px_rgba(65,45,24,0.12)] sm:p-6">
         <div className="bg-panel space-y-6 rounded-[1.5rem] p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
