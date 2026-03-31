@@ -67,6 +67,15 @@ Run lint:
 npm run lint
 ```
 
+## Supabase Setup
+
+1. Copy `.env.example` to `.env.local`
+2. Add your Supabase project URL and anon key
+3. Use `lib/supabase/client.ts` in client components
+4. Use `lib/supabase/server.ts` in server components, server actions or route handlers
+
+This setup only wires the project to Supabase. Database schema, auth screens, middleware and RPC functions come next.
+
 ## Git Workflow
 
 - `main` -> stable baseline only
