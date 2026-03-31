@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { generateInviteCode, normalizeInviteCode } from "@/lib/groups/invite-code";
 import { createAdminClient, hasServiceRoleKey } from "@/lib/supabase/admin";
@@ -19,11 +20,6 @@ function getString(formData: FormData, key: string) {
 function normalizeGroupName(value: string) {
   return value.trim().replace(/\s+/g, " ");
 }
-
-const successState = (message: string): GroupActionState => ({
-  status: "success",
-  message,
-});
 
 const errorState = (message: string): GroupActionState => ({
   status: "error",
@@ -108,8 +104,8 @@ export async function createGroupAction(
   }
 
   revalidatePath("/dashboard");
-
-  return successState(`Group created. Invite code: ${group.invite_code}`);
+  revalidatePath(`/groups/${group.id}`);
+  redirect(`/groups/${group.id}`);
 }
 
 export async function joinGroupAction(
@@ -169,8 +165,8 @@ export async function joinGroupAction(
   }
 
   revalidatePath("/dashboard");
-
-  return successState(`You joined ${group.name}.`);
+  revalidatePath(`/groups/${group.id}`);
+  redirect(`/groups/${group.id}`);
 }
 
 export async function removeMemberAction(formData: FormData) {
@@ -215,6 +211,7 @@ export async function removeMemberAction(formData: FormData) {
     .neq("role", "owner");
 
   revalidatePath("/dashboard");
+  revalidatePath(`/groups/${groupId}`);
 }
 
 export async function deleteGroupAction(formData: FormData) {
@@ -253,4 +250,5 @@ export async function deleteGroupAction(formData: FormData) {
   await admin.from("groups").delete().eq("id", groupId);
 
   revalidatePath("/dashboard");
+  redirect("/dashboard");
 }

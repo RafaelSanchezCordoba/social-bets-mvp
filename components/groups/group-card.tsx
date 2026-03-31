@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { deleteGroupAction, removeMemberAction } from "@/app/dashboard/actions";
 
 type GroupMember = {
@@ -36,9 +38,12 @@ export function GroupCard({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-ink text-2xl font-semibold tracking-[-0.04em]">
+              <Link
+                href={`/groups/${id}`}
+                className="text-ink text-2xl font-semibold tracking-[-0.04em]"
+              >
                 {name}
-              </p>
+              </Link>
               <span className="bg-accent-soft text-accent-strong rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em]">
                 {currentUserRole}
               </span>

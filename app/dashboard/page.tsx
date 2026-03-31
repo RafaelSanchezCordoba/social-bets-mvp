@@ -4,6 +4,7 @@ import { signOutAction } from "@/app/(auth)/actions";
 import { CreateGroupForm } from "@/components/groups/create-group-form";
 import { GroupCard } from "@/components/groups/group-card";
 import { JoinGroupForm } from "@/components/groups/join-group-form";
+import { getUserGroups } from "@/lib/groups/queries";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
@@ -22,81 +23,7 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  const { data: groupMemberships } = await supabase
-    .from("group_members")
-    .select("group_id, role")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: true });
-
-  const groupIds = groupMemberships?.map((membership) => membership.group_id) ?? [];
-
-  let groupsData: Array<{
-    id: string;
-    name: string;
-    invite_code: string;
-    created_at: string;
-    group_members: Array<{
-      user_id: string;
-      role: "owner" | "member";
-      points: number;
-      profile: { username: string } | Array<{ username: string }> | null;
-    }> | null;
-  }> = [];
-
-  if (groupIds.length > 0) {
-    const { data } = await supabase
-      .from("groups")
-      .select(
-        `
-          id,
-          name,
-          invite_code,
-          created_at,
-          group_members (
-            user_id,
-            role,
-            points,
-            profile:profiles (
-              username
-            )
-          )
-        `,
-      )
-      .in("id", groupIds)
-      .order("created_at", { ascending: true });
-
-    groupsData = (data as typeof groupsData) ?? [];
-  }
-
-  const membershipRoleByGroupId = new Map(
-    (groupMemberships ?? []).map((membership) => [membership.group_id, membership.role]),
-  );
-
-  const groups =
-    groupsData?.flatMap((group) => {
-      const currentUserRole = membershipRoleByGroupId.get(group.id);
-
-      if (!currentUserRole) {
-        return [];
-      }
-
-      return [
-        {
-          id: group.id,
-          name: group.name,
-          inviteCode: group.invite_code,
-          createdAt: group.created_at,
-          currentUserRole,
-          members:
-            group.group_members?.map((member) => ({
-              user_id: member.user_id,
-              role: member.role,
-              points: member.points,
-              profile: Array.isArray(member.profile) ? member.profile[0] ?? null : member.profile,
-            })) ?? [],
-        },
-      ];
-    }) ?? [];
+  const groups = await getUserGroups(user.id);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
