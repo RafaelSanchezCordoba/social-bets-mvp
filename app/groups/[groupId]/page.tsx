@@ -7,7 +7,10 @@ import {
   leaveGroupAction,
   removeMemberAction,
 } from "@/app/dashboard/actions";
+import { CreateBetForm } from "@/components/bets/create-bet-form";
+import { GroupBetsPanel } from "@/components/bets/group-bets-panel";
 import { GroupsRealtimeListener } from "@/components/realtime/groups-realtime-listener";
+import { getGroupBets } from "@/lib/bets/queries";
 import { getGroupForUser } from "@/lib/groups/queries";
 import { createClient } from "@/lib/supabase/server";
 
@@ -33,6 +36,12 @@ export default async function GroupPage({ params }: GroupPageProps) {
   if (!group) {
     redirect("/dashboard");
   }
+
+  const bets = await getGroupBets(group.id, user.id);
+  const currentUserMember = group.members.find((member) => member.user_id === user.id) ?? null;
+  const openBets = bets.filter((bet) => bet.status === "open");
+  const closedBets = bets.filter((bet) => bet.status === "closed");
+  const historyBets = bets.filter((bet) => ["resolved", "cancelled"].includes(bet.status));
 
   const isOwner = group.currentUserRole === "owner";
 
@@ -113,13 +122,47 @@ export default async function GroupPage({ params }: GroupPageProps) {
             </article>
             <article className="border-line rounded-2xl border bg-white p-4">
               <p className="text-ink-muted font-mono text-[11px] uppercase tracking-[0.2em]">
-                Status
+                My balance
               </p>
               <p className="text-ink mt-2 text-sm leading-6">
-                Group space ready for upcoming bets
+                {currentUserMember?.points ?? 0} pts
               </p>
             </article>
           </div>
+
+          <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+            <div className="border-line rounded-[1.75rem] border bg-white/80 p-4 sm:p-5">
+              <div className="space-y-2">
+                <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
+                  Create bet
+                </p>
+                <h2 className="text-ink text-2xl font-semibold tracking-[-0.03em]">
+                  Open a new prediction round
+                </h2>
+                <p className="text-ink-soft text-sm leading-6">
+                  Add two to four options and choose whether the bet closes automatically or only when you close it manually.
+                </p>
+              </div>
+
+              <div className="mt-5">
+                <CreateBetForm groupId={group.id} />
+              </div>
+            </div>
+
+            <div className="border-line rounded-[1.75rem] border bg-white/80 p-4 sm:p-5">
+              <div className="space-y-2">
+                <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
+                  Betting rules
+                </p>
+                <h2 className="text-ink text-2xl font-semibold tracking-[-0.03em]">
+                  One wager per user, final once placed
+                </h2>
+                <p className="text-ink-soft text-sm leading-7">
+                  Bets use parimutuel payouts. The creator can close, resolve, or cancel a bet. If a bet is cancelled, all wagered points return to their members.
+                </p>
+              </div>
+            </div>
+          </section>
 
           <section className="space-y-4">
             <div className="space-y-2">
@@ -168,8 +211,16 @@ export default async function GroupPage({ params }: GroupPageProps) {
             </div>
           </section>
 
+          <GroupBetsPanel
+            groupId={group.id}
+            currentUserId={user.id}
+            openBets={openBets}
+            closedBets={closedBets}
+            historyBets={historyBets}
+          />
+
           <div className="border-line rounded-2xl border bg-white/80 p-4 text-sm leading-7 text-ink-soft">
-            Bets, options, and live pool updates will be added here next, so each group gets its own dedicated betting hub.
+            Apply `supabase/migrations/20260331170000_create_bets_and_wagers.sql` in Supabase before testing the betting flow in this group.
           </div>
         </div>
       </section>

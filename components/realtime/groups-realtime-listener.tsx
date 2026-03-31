@@ -24,6 +24,7 @@ export function GroupsRealtimeListener({
   const router = useRouter();
   const refreshTimeoutRef = useRef<number | null>(null);
   const intervalRef = useRef<number | null>(null);
+  const channelHealthyRef = useRef(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -64,12 +65,27 @@ export function GroupsRealtimeListener({
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        scheduleRefresh();
-        startPolling();
+        if (!channelHealthyRef.current) {
+          scheduleRefresh();
+          startPolling();
+        }
+
         return;
       }
 
       stopPolling();
+    };
+
+    const markChannelHealthy = () => {
+      channelHealthyRef.current = true;
+      stopPolling();
+    };
+
+    const markChannelUnhealthy = () => {
+      channelHealthyRef.current = false;
+      if (document.visibilityState === "visible") {
+        startPolling();
+      }
     };
 
     const handleGroupMembersChange = (
@@ -129,14 +145,28 @@ export function GroupsRealtimeListener({
       scheduleRefresh();
     };
 
+    const handleBetScopedChange = (payload: RealtimePostgresChangesPayload<RealtimeRow>) => {
+      const row = ((payload.new ?? payload.old ?? null) as RealtimeRow | null);
+
+      if (!row || !groupId) {
+        return;
+      }
+
+      if (row.group_id !== groupId) {
+        return;
+      }
+
+      scheduleRefresh();
+    };
+
     const subscribeStatus = (status: string) => {
       if (status === "SUBSCRIBED") {
-        scheduleRefresh();
-        startPolling();
+        markChannelHealthy();
+        return;
       }
 
       if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-        startPolling();
+        markChannelUnhealthy();
       }
     };
 
@@ -160,6 +190,38 @@ export function GroupsRealtimeListener({
       handleGroupsChange,
     );
 
+    if (groupId) {
+      channel.on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bets",
+        },
+        handleBetScopedChange,
+      );
+
+      channel.on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bet_options",
+        },
+        handleBetScopedChange,
+      );
+
+      channel.on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "wagers",
+        },
+        handleBetScopedChange,
+      );
+    }
+
     channel.subscribe(subscribeStatus);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     handleVisibilityChange();
@@ -171,6 +233,7 @@ export function GroupsRealtimeListener({
         window.clearTimeout(refreshTimeoutRef.current);
       }
 
+      channelHealthyRef.current = false;
       stopPolling();
       refreshTimeoutRef.current = null;
       void supabase.removeChannel(channel);
