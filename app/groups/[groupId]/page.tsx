@@ -7,7 +7,10 @@ import {
   leaveGroupAction,
   removeMemberAction,
 } from "@/app/dashboard/actions";
+import { BetCard } from "@/components/bets/bet-card";
+import { CreateBetForm } from "@/components/bets/create-bet-form";
 import { GroupsRealtimeListener } from "@/components/realtime/groups-realtime-listener";
+import { getGroupBets } from "@/lib/bets/queries";
 import { getGroupForUser } from "@/lib/groups/queries";
 import { createClient } from "@/lib/supabase/server";
 
@@ -33,6 +36,11 @@ export default async function GroupPage({ params }: GroupPageProps) {
   if (!group) {
     redirect("/dashboard");
   }
+
+  const bets = await getGroupBets(group.id, user.id);
+  const currentUserMember = group.members.find((member) => member.user_id === user.id) ?? null;
+  const openBets = bets.filter((bet) => bet.status === "open");
+  const finishedBets = bets.filter((bet) => bet.status !== "open");
 
   const isOwner = group.currentUserRole === "owner";
 
@@ -113,13 +121,47 @@ export default async function GroupPage({ params }: GroupPageProps) {
             </article>
             <article className="border-line rounded-2xl border bg-white p-4">
               <p className="text-ink-muted font-mono text-[11px] uppercase tracking-[0.2em]">
-                Status
+                My balance
               </p>
               <p className="text-ink mt-2 text-sm leading-6">
-                Group space ready for upcoming bets
+                {currentUserMember?.points ?? 0} pts
               </p>
             </article>
           </div>
+
+          <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+            <div className="border-line rounded-[1.75rem] border bg-white/80 p-4 sm:p-5">
+              <div className="space-y-2">
+                <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
+                  Create bet
+                </p>
+                <h2 className="text-ink text-2xl font-semibold tracking-[-0.03em]">
+                  Open a new prediction round
+                </h2>
+                <p className="text-ink-soft text-sm leading-6">
+                  Add two to four options and choose whether the bet closes automatically or only when you close it manually.
+                </p>
+              </div>
+
+              <div className="mt-5">
+                <CreateBetForm groupId={group.id} />
+              </div>
+            </div>
+
+            <div className="border-line rounded-[1.75rem] border bg-white/80 p-4 sm:p-5">
+              <div className="space-y-2">
+                <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
+                  Betting rules
+                </p>
+                <h2 className="text-ink text-2xl font-semibold tracking-[-0.03em]">
+                  One wager per user, final once placed
+                </h2>
+                <p className="text-ink-soft text-sm leading-7">
+                  Bets use parimutuel payouts. The creator can close, resolve, or cancel a bet. If a bet is cancelled, all wagered points return to their members.
+                </p>
+              </div>
+            </div>
+          </section>
 
           <section className="space-y-4">
             <div className="space-y-2">
@@ -168,8 +210,54 @@ export default async function GroupPage({ params }: GroupPageProps) {
             </div>
           </section>
 
+          <section className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
+                Open bets
+              </p>
+              <h2 className="text-ink text-2xl font-semibold tracking-[-0.03em]">
+                Live pools and open wagers
+              </h2>
+            </div>
+
+            {openBets.length > 0 ? (
+              <div className="grid gap-4">
+                {openBets.map((bet) => (
+                  <BetCard key={bet.id} groupId={group.id} bet={bet} currentUserId={user.id} />
+                ))}
+              </div>
+            ) : (
+              <div className="border-line rounded-[1.75rem] border bg-white/70 p-5 text-sm leading-7 text-ink-soft">
+                There are no open bets in this group yet.
+              </div>
+            )}
+          </section>
+
+          <section className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">
+                Finished bets
+              </p>
+              <h2 className="text-ink text-2xl font-semibold tracking-[-0.03em]">
+                Closed, resolved, and cancelled
+              </h2>
+            </div>
+
+            {finishedBets.length > 0 ? (
+              <div className="grid gap-4">
+                {finishedBets.map((bet) => (
+                  <BetCard key={bet.id} groupId={group.id} bet={bet} currentUserId={user.id} />
+                ))}
+              </div>
+            ) : (
+              <div className="border-line rounded-[1.75rem] border bg-white/70 p-5 text-sm leading-7 text-ink-soft">
+                Resolved and cancelled bets will show up here.
+              </div>
+            )}
+          </section>
+
           <div className="border-line rounded-2xl border bg-white/80 p-4 text-sm leading-7 text-ink-soft">
-            Bets, options, and live pool updates will be added here next, so each group gets its own dedicated betting hub.
+            Apply `supabase/migrations/20260331170000_create_bets_and_wagers.sql` in Supabase before testing the betting flow in this group.
           </div>
         </div>
       </section>
