@@ -103,6 +103,16 @@ export default async function GroupPage({ params }: GroupPageProps) {
               <p className="text-ink-muted font-mono text-[11px] uppercase tracking-[0.2em]">My balance</p>
               <p className="text-ink mt-2 text-lg font-semibold">{currentUserMember?.points ?? 0} pts</p>
             </article>
+            <Link
+              href={`/leaderboard?group=${group.id}`}
+              className="border-line text-ink flex items-center justify-between rounded-2xl border bg-white p-4 sm:col-span-3"
+            >
+              <div>
+                <p className="text-ink-muted font-mono text-[11px] uppercase tracking-[0.2em]">Leaderboard</p>
+                <p className="text-ink mt-2 text-base font-semibold">View this group ranking</p>
+              </div>
+              <span className="text-accent-strong text-sm font-medium">Open</span>
+            </Link>
           </div>
         </div>
       </section>
