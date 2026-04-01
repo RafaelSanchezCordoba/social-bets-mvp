@@ -108,7 +108,7 @@ export function GroupsRealtimeListener({
           payload.eventType === "DELETE" && row.user_id === currentUserId;
 
         if (currentUserLostMembership) {
-          router.replace("/dashboard");
+          router.replace("/groups");
           router.refresh();
           return;
         }
@@ -133,7 +133,7 @@ export function GroupsRealtimeListener({
         }
 
         if (payload.eventType === "DELETE") {
-          router.replace("/dashboard");
+          router.replace("/groups");
           router.refresh();
           return;
         }

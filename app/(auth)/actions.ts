@@ -65,7 +65,7 @@ export async function signUpAction(
   }
 
   if (data.session) {
-    redirect("/dashboard");
+    redirect("/home");
   }
 
   return {
@@ -144,7 +144,7 @@ export async function signInAction(
     return { status: "error", message: error.message };
   }
 
-  redirect("/dashboard");
+  redirect("/home");
 }
 
 export async function signOutAction() {
