@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { GroupStandings } from "@/components/leaderboard/group-standings";
 import { GroupsRealtimeListener } from "@/components/realtime/groups-realtime-listener";
 import { getGroupLeaderboard } from "@/lib/leaderboard/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -9,13 +10,6 @@ type LeaderboardPageProps = {
     group?: string;
   }>;
 };
-
-function getMedal(rank: number) {
-  if (rank === 1) return "01";
-  if (rank === 2) return "02";
-  if (rank === 3) return "03";
-  return null;
-}
 
 export default async function LeaderboardPage({ searchParams }: LeaderboardPageProps) {
   const { group: selectedGroupId } = await searchParams;
@@ -29,6 +23,7 @@ export default async function LeaderboardPage({ searchParams }: LeaderboardPageP
   }
 
   const { groups, selectedGroup, entries } = await getGroupLeaderboard(user.id, selectedGroupId);
+  const canManageMembers = selectedGroup?.currentUserRole === "owner";
 
   return (
     <main className="space-y-5">
@@ -85,46 +80,12 @@ export default async function LeaderboardPage({ searchParams }: LeaderboardPageP
                     </article>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-3">
-                    {entries.slice(0, 3).map((entry) => (
-                      <article
-                        key={entry.userId}
-                        className="border-line rounded-[1.6rem] border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,239,229,0.92))] p-4 shadow-sm"
-                      >
-                        <p className="text-ink-muted font-mono text-[11px] uppercase tracking-[0.2em]">
-                          Rank {getMedal(entry.rank) ?? entry.rank}
-                        </p>
-                        <p className="text-ink mt-3 text-xl font-semibold tracking-[-0.03em]">{entry.username}</p>
-                        <div className="mt-3 flex items-center justify-between gap-3">
-                          <span className="bg-accent-soft text-accent-strong rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em]">
-                            {entry.role}
-                          </span>
-                          <span className="text-ink text-lg font-semibold">{entry.points} pts</span>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-
-                  {entries.length > 3 ? (
-                    <div className="grid gap-3">
-                      {entries.slice(3).map((entry) => (
-                        <article
-                          key={entry.userId}
-                          className="border-line flex items-center justify-between gap-3 rounded-2xl border bg-white px-4 py-3"
-                        >
-                          <div>
-                            <p className="text-ink text-sm font-medium">
-                              #{entry.rank} {entry.username}
-                            </p>
-                            <p className="text-ink-muted mt-1 font-mono text-[11px] uppercase tracking-[0.18em]">
-                              {entry.role}
-                            </p>
-                          </div>
-                          <p className="text-ink text-base font-semibold">{entry.points} pts</p>
-                        </article>
-                      ))}
-                    </div>
-                  ) : null}
+                  <GroupStandings
+                    groupId={selectedGroup.id}
+                    currentUserId={user.id}
+                    canManageMembers={canManageMembers}
+                    entries={entries}
+                  />
                 </div>
               ) : null}
             </div>
