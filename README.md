@@ -74,7 +74,8 @@ npm run lint
 3. Use `lib/supabase/client.ts` in client components
 4. Use `lib/supabase/server.ts` in server components, server actions or route handlers
 5. Run `npm run supabase:check` to verify the connection
-6. Add `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` if you want login by username on the server
+6. Add `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` for username login and group management server actions
+7. Add `NEXT_PUBLIC_SITE_URL` in `.env.local` so email verification can redirect back to the app callback
 
 This setup only wires the project to Supabase. Database schema, auth screens, middleware and RPC functions come next.
 
@@ -89,6 +90,8 @@ That migration creates:
 - the RLS policies for each user profile
 
 The login screen supports email or username. Username login is resolved on the server and needs `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`.
+
+Email verification is completed through `app/auth/callback/route.ts`, so your Supabase email redirect URL should point back to `/auth/callback`.
 
 ## Git Workflow
 

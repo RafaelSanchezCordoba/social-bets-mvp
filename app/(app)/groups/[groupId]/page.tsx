@@ -16,10 +16,14 @@ type GroupPageProps = {
   params: Promise<{
     groupId: string;
   }>;
+  searchParams: Promise<{
+    actionError?: string;
+  }>;
 };
 
-export default async function GroupPage({ params }: GroupPageProps) {
+export default async function GroupPage({ params, searchParams }: GroupPageProps) {
   const { groupId } = await params;
+  const { actionError } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -46,6 +50,12 @@ export default async function GroupPage({ params }: GroupPageProps) {
   return (
     <main className="space-y-5">
       <GroupsRealtimeListener groupId={group.id} currentUserId={user.id} />
+
+      {actionError ? (
+        <div className="rounded-[1.5rem] border border-[rgba(164,60,33,0.18)] bg-[rgba(255,241,236,0.9)] px-4 py-3 text-sm leading-6 text-[rgb(140,52,29)] shadow-sm">
+          {actionError}
+        </div>
+      ) : null}
 
       <section className="border-line-strong rounded-[2rem] border bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(244,239,231,0.96))] p-4 shadow-[0_24px_80px_rgba(65,45,24,0.12)] sm:p-5">
         <div className="bg-panel space-y-5 rounded-[1.5rem] p-5">
