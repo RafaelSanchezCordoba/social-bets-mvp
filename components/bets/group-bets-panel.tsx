@@ -34,7 +34,7 @@ export function GroupBetsPanel({
           </h2>
         </div>
 
-        <div className="border-line inline-flex rounded-2xl border bg-white p-1">
+        <div className="border-line inline-flex w-fit self-start rounded-2xl border bg-white p-1 sm:self-auto">
           <button
             type="button"
             onClick={() => setView("active")}

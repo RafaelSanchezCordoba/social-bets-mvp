@@ -1,16 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import {
-  deleteGroupAction,
-  leaveGroupAction,
-  removeMemberAction,
-} from "@/app/dashboard/actions";
-import { CreateBetForm } from "@/components/bets/create-bet-form";
+import { deleteGroupAction, leaveGroupAction } from "@/app/dashboard/actions";
+import { CreateBetPanel } from "@/components/bets/create-bet-panel";
+import { CopyInviteButton } from "@/components/groups/copy-invite-button";
 import { GroupBetsPanel } from "@/components/bets/group-bets-panel";
+import { GroupStandings } from "@/components/leaderboard/group-standings";
 import { GroupsRealtimeListener } from "@/components/realtime/groups-realtime-listener";
 import { getGroupBets } from "@/lib/bets/queries";
 import { getGroupForUser } from "@/lib/groups/queries";
+import { getGroupLeaderboard } from "@/lib/leaderboard/queries";
 import { createClient } from "@/lib/supabase/server";
 
 type GroupPageProps = {
@@ -37,6 +36,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
   }
 
   const bets = await getGroupBets(group.id, user.id);
+  const { entries } = await getGroupLeaderboard(user.id, group.id);
   const currentUserMember = group.members.find((member) => member.user_id === user.id) ?? null;
   const openBets = bets.filter((bet) => bet.status === "open");
   const closedBets = bets.filter((bet) => bet.status === "closed");
@@ -54,124 +54,82 @@ export default async function GroupPage({ params }: GroupPageProps) {
               <Link href="/groups" className="text-ink-muted font-mono text-xs uppercase tracking-[0.24em]">
                 Back to groups
               </Link>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <h1 className="text-ink text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
                   {group.name}
                 </h1>
                 <span className="bg-accent-soft text-accent-strong rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em]">
                   {group.currentUserRole}
                 </span>
+                {isOwner ? (
+                  <form action={deleteGroupAction} className="sm:ml-2">
+                    <input type="hidden" name="groupId" value={group.id} />
+                    <button
+                      type="submit"
+                      className="rounded-2xl border border-[rgba(164,60,33,0.18)] bg-[rgba(255,241,236,0.88)] px-4 py-2 text-sm font-medium text-[rgb(140,52,29)]"
+                    >
+                      Delete group
+                    </button>
+                  </form>
+                ) : (
+                  <form action={leaveGroupAction} className="sm:ml-2">
+                    <input type="hidden" name="groupId" value={group.id} />
+                    <button
+                      type="submit"
+                      className="border-line text-ink flex h-10 items-center justify-center rounded-2xl border bg-white px-4 text-sm font-medium"
+                    >
+                      Leave group
+                    </button>
+                  </form>
+                )}
               </div>
-              <p className="text-ink-soft max-w-2xl text-sm leading-7 sm:text-base">
-                Run private predictions, manage members, and keep the whole pool synced live like a proper mobile-first app.
-              </p>
             </div>
-
-            {isOwner ? (
-              <form action={deleteGroupAction}>
-                <input type="hidden" name="groupId" value={group.id} />
-                <button
-                  type="submit"
-                  className="rounded-2xl border border-[rgba(164,60,33,0.18)] bg-[rgba(255,241,236,0.88)] px-4 py-3 text-sm font-medium text-[rgb(140,52,29)]"
-                >
-                  Delete group
-                </button>
-              </form>
-            ) : (
-              <form action={leaveGroupAction}>
-                <input type="hidden" name="groupId" value={group.id} />
-                <button
-                  type="submit"
-                  className="border-line text-ink flex h-12 items-center justify-center rounded-2xl border bg-white px-5 text-sm font-medium"
-                >
-                  Leave group
-                </button>
-              </form>
-            )}
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
             <article className="border-line rounded-2xl border bg-white p-4">
               <p className="text-ink-muted font-mono text-[11px] uppercase tracking-[0.2em]">Invite code</p>
-              <p className="text-ink mt-2 text-lg font-semibold tracking-[0.18em]">{group.inviteCode}</p>
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <p className="text-ink text-lg font-semibold tracking-[0.18em]">{group.inviteCode}</p>
+                <CopyInviteButton inviteCode={group.inviteCode} />
+              </div>
             </article>
-            <article className="border-line rounded-2xl border bg-white p-4">
-              <p className="text-ink-muted font-mono text-[11px] uppercase tracking-[0.2em]">Members</p>
-              <p className="text-ink mt-2 text-lg font-semibold">{group.members.length}</p>
-            </article>
+            <details className="border-line rounded-2xl border bg-white p-4 sm:col-span-1">
+              <summary className="list-none cursor-pointer">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-ink-muted font-mono text-[11px] uppercase tracking-[0.2em]">Members & standings</p>
+                    <p className="text-ink mt-2 text-lg font-semibold">{group.members.length}</p>
+                  </div>
+                  <span className="text-accent-strong text-sm font-medium">Open</span>
+                </div>
+              </summary>
+
+              <div className="mt-4 grid gap-3 border-t border-[rgba(92,73,48,0.12)] pt-4">
+                <GroupStandings
+                  groupId={group.id}
+                  currentUserId={user.id}
+                  canManageMembers={isOwner}
+                  entries={entries}
+                />
+                <Link
+                  href={`/leaderboard?group=${group.id}`}
+                  className="text-accent-strong inline-flex text-sm font-medium"
+                >
+                  Open full leaderboard page
+                </Link>
+              </div>
+            </details>
             <article className="border-line rounded-2xl border bg-white p-4">
               <p className="text-ink-muted font-mono text-[11px] uppercase tracking-[0.2em]">My balance</p>
               <p className="text-ink mt-2 text-lg font-semibold">{currentUserMember?.points ?? 0} pts</p>
             </article>
-            <Link
-              href={`/leaderboard?group=${group.id}`}
-              className="border-line text-ink flex items-center justify-between rounded-2xl border bg-white p-4 sm:col-span-3"
-            >
-              <div>
-                <p className="text-ink-muted font-mono text-[11px] uppercase tracking-[0.2em]">Leaderboard</p>
-                <p className="text-ink mt-2 text-base font-semibold">View this group ranking</p>
-              </div>
-              <span className="text-accent-strong text-sm font-medium">Open</span>
-            </Link>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="border-line rounded-[1.75rem] border bg-white/84 p-4 shadow-sm backdrop-blur sm:p-5">
-          <div className="space-y-2">
-            <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">Create bet</p>
-            <h2 className="text-ink text-2xl font-semibold tracking-[-0.03em]">Open a new prediction round</h2>
-            <p className="text-ink-soft text-sm leading-6">
-              Add two to four options and decide whether the bet closes automatically or only when you close it yourself.
-            </p>
-          </div>
-          <div className="mt-5">
-            <CreateBetForm groupId={group.id} />
-          </div>
-        </div>
-
-        <div className="border-line rounded-[1.75rem] border bg-white/84 p-4 shadow-sm backdrop-blur sm:p-5">
-          <div className="space-y-2">
-            <p className="text-ink-muted font-mono text-xs uppercase tracking-[0.22em]">Roster</p>
-            <h2 className="text-ink text-2xl font-semibold tracking-[-0.03em]">Everyone inside the group</h2>
-            <p className="text-ink-soft text-sm leading-6">
-              Owners can remove members, and members can always rejoin later with the same invite code.
-            </p>
-          </div>
-          <div className="mt-5 grid gap-3">
-            {group.members.map((member) => {
-              const canRemove = isOwner && member.user_id !== user.id && member.role !== "owner";
-
-              return (
-                <article
-                  key={member.user_id}
-                  className="border-line flex items-center justify-between gap-3 rounded-2xl border bg-white px-4 py-3"
-                >
-                  <div>
-                    <p className="text-ink text-sm font-medium">{member.profile?.username ?? "Unknown user"}</p>
-                    <p className="text-ink-muted mt-1 font-mono text-[11px] uppercase tracking-[0.18em]">
-                      {member.points} pts · {member.role}
-                    </p>
-                  </div>
-
-                  {canRemove ? (
-                    <form action={removeMemberAction}>
-                      <input type="hidden" name="groupId" value={group.id} />
-                      <input type="hidden" name="memberUserId" value={member.user_id} />
-                      <button
-                        type="submit"
-                        className="rounded-2xl border border-[rgba(164,60,33,0.18)] bg-[rgba(255,241,236,0.88)] px-4 py-2 text-sm font-medium text-[rgb(140,52,29)]"
-                      >
-                        Remove
-                      </button>
-                    </form>
-                  ) : null}
-                </article>
-              );
-            })}
-          </div>
-        </div>
+      <section>
+        <CreateBetPanel groupId={group.id} />
       </section>
 
       <GroupBetsPanel

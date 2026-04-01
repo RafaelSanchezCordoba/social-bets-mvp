@@ -60,7 +60,6 @@ export default async function GroupsPage() {
                 name={group.name}
                 inviteCode={group.inviteCode}
                 createdAt={group.createdAt}
-                currentUserId={user.id}
                 currentUserRole={group.currentUserRole}
                 members={group.members}
               />
