@@ -19,7 +19,7 @@ const iconProps = {
 
 const navItems = [
   {
-    href: "/dashboard",
+    href: "/home",
     label: "Home",
     icon: (
       <svg {...iconProps}>
@@ -27,7 +27,7 @@ const navItems = [
         <path d="M9.5 19v-4.5h5V19" />
       </svg>
     ),
-    matches: (pathname: string) => pathname === "/dashboard",
+    matches: (pathname: string) => pathname === "/home",
   },
   {
     href: "/groups",

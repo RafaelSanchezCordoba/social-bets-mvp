@@ -103,7 +103,8 @@ export async function createGroupAction(
     return errorState(memberError.message);
   }
 
-  revalidatePath("/dashboard");
+  revalidatePath("/home");
+  revalidatePath("/groups");
   revalidatePath(`/groups/${group.id}`);
   redirect(`/groups/${group.id}`);
 }
@@ -164,7 +165,8 @@ export async function joinGroupAction(
     return errorState(memberError.message);
   }
 
-  revalidatePath("/dashboard");
+  revalidatePath("/home");
+  revalidatePath("/groups");
   revalidatePath(`/groups/${group.id}`);
   redirect(`/groups/${group.id}`);
 }
@@ -210,7 +212,8 @@ export async function removeMemberAction(formData: FormData) {
     .eq("user_id", memberUserId)
     .neq("role", "owner");
 
-  revalidatePath("/dashboard");
+  revalidatePath("/home");
+  revalidatePath("/groups");
   revalidatePath(`/groups/${groupId}`);
 }
 
@@ -249,8 +252,9 @@ export async function deleteGroupAction(formData: FormData) {
 
   await admin.from("groups").delete().eq("id", groupId);
 
-  revalidatePath("/dashboard");
-  redirect("/dashboard");
+  revalidatePath("/home");
+  revalidatePath("/groups");
+  redirect("/groups");
 }
 
 export async function leaveGroupAction(formData: FormData) {
@@ -291,7 +295,8 @@ export async function leaveGroupAction(formData: FormData) {
     .eq("group_id", groupId)
     .eq("user_id", user.id);
 
-  revalidatePath("/dashboard");
+  revalidatePath("/home");
+  revalidatePath("/groups");
   revalidatePath(`/groups/${groupId}`);
-  redirect("/dashboard");
+  redirect("/groups");
 }
