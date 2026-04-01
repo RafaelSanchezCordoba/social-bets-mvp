@@ -22,7 +22,13 @@ const errorState = (message: string): BetFormState => ({
 
 function revalidateGroup(groupId: string) {
   revalidatePath(`/groups/${groupId}`);
-  revalidatePath("/dashboard");
+  revalidatePath("/groups");
+  revalidatePath("/home");
+}
+
+function buildGroupRedirectUrl(groupId: string, params: Record<string, string>) {
+  const searchParams = new URLSearchParams(params);
+  return `/groups/${groupId}?${searchParams.toString()}`;
 }
 
 export async function createBetAction(
@@ -100,12 +106,16 @@ export async function closeBetAction(formData: FormData) {
   const betId = getString(formData, "betId");
 
   if (!groupId || !betId) {
-    return;
+    redirect("/groups");
   }
 
-  await supabase.rpc("close_bet", {
+  const { error } = await supabase.rpc("close_bet", {
     target_bet_id: betId,
   });
+
+  if (error) {
+    redirect(buildGroupRedirectUrl(groupId, { actionError: error.message }));
+  }
 
   revalidateGroup(groupId);
   redirect(`/groups/${groupId}`);
@@ -117,12 +127,16 @@ export async function cancelBetAction(formData: FormData) {
   const betId = getString(formData, "betId");
 
   if (!groupId || !betId) {
-    return;
+    redirect("/groups");
   }
 
-  await supabase.rpc("cancel_bet", {
+  const { error } = await supabase.rpc("cancel_bet", {
     target_bet_id: betId,
   });
+
+  if (error) {
+    redirect(buildGroupRedirectUrl(groupId, { actionError: error.message }));
+  }
 
   revalidateGroup(groupId);
   redirect(`/groups/${groupId}`);
@@ -135,13 +149,17 @@ export async function resolveBetAction(formData: FormData) {
   const optionId = getString(formData, "winningOptionId");
 
   if (!groupId || !betId || !optionId) {
-    return;
+    redirect("/groups");
   }
 
-  await supabase.rpc("resolve_bet", {
+  const { error } = await supabase.rpc("resolve_bet", {
     target_bet_id: betId,
     target_option_id: optionId,
   });
+
+  if (error) {
+    redirect(buildGroupRedirectUrl(groupId, { actionError: error.message }));
+  }
 
   revalidateGroup(groupId);
   redirect(`/groups/${groupId}`);

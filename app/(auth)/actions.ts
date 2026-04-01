@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
@@ -20,6 +21,16 @@ export type AuthFormState = {
 function getString(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value : "";
+}
+
+async function getAuthCallbackUrl() {
+  const headerStore = await headers();
+  const origin =
+    headerStore.get("origin") ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    "http://localhost:3000";
+
+  return `${origin}/auth/callback`;
 }
 
 export async function signUpAction(
@@ -54,6 +65,7 @@ export async function signUpAction(
     email,
     password,
     options: {
+      emailRedirectTo: await getAuthCallbackUrl(),
       data: {
         username,
       },

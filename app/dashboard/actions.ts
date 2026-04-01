@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { generateInviteCode, normalizeInviteCode } from "@/lib/groups/invite-code";
@@ -25,6 +26,33 @@ const errorState = (message: string): GroupActionState => ({
   status: "error",
   message,
 });
+
+async function hasPendingGroupWagers(groupId: string, userId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("has_pending_group_wagers", {
+    target_group_id: groupId,
+    target_user_id: userId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return Boolean(data);
+}
+
+async function redirectBackWithError(defaultPath: string, message: string) {
+  const headerStore = await headers();
+  const referer = headerStore.get("referer");
+
+  if (!referer) {
+    redirect(defaultPath);
+  }
+
+  const refererUrl = new URL(referer);
+  refererUrl.searchParams.set("actionError", message);
+  redirect(`${refererUrl.pathname}?${refererUrl.searchParams.toString()}`);
+}
 
 export async function createGroupAction(
   _previousState: GroupActionState,
@@ -205,6 +233,13 @@ export async function removeMemberAction(formData: FormData) {
     return;
   }
 
+  if (await hasPendingGroupWagers(groupId, memberUserId)) {
+    await redirectBackWithError(
+      `/leaderboard?group=${groupId}`,
+      "This member cannot be removed while they still have unresolved wagers.",
+    );
+  }
+
   await admin
     .from("group_members")
     .delete()
@@ -250,6 +285,20 @@ export async function deleteGroupAction(formData: FormData) {
     return;
   }
 
+  const { data: hasUnsettledBets, error: unsettledBetsError } = await supabase.rpc(
+    "group_has_unsettled_bets",
+    {
+      target_group_id: groupId,
+    },
+  );
+
+  if (unsettledBetsError || hasUnsettledBets) {
+    await redirectBackWithError(
+      `/groups/${groupId}`,
+      "This group cannot be deleted while it still has open or closed bets.",
+    );
+  }
+
   await admin.from("groups").delete().eq("id", groupId);
 
   revalidatePath("/home");
@@ -287,6 +336,13 @@ export async function leaveGroupAction(formData: FormData) {
 
   if (!membership || membership.role === "owner") {
     return;
+  }
+
+  if (await hasPendingGroupWagers(groupId, user.id)) {
+    await redirectBackWithError(
+      `/groups/${groupId}`,
+      "You cannot leave this group while you still have unresolved wagers.",
+    );
   }
 
   await admin
